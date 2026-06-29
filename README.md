@@ -6,7 +6,7 @@ approaches with pairwise contrast testing via `emmeans`.
 
 ## View the tutorial
 
-[https://marcabeer.github.io/power-analysis-fixed-effects-tutorial/](https://marcabeer.github.io/power-analysis-fixed-effects-tutorial/)
+<a href="https://marcabeer.github.io/power-analysis-fixed-effects-tutorial/" target="_blank">https://marcabeer.github.io/power-analysis-fixed-effects-tutorial/</a>
 
 ## Repository contents
 
