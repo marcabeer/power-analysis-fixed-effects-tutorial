@@ -1576,8 +1576,9 @@ in preparation.</p>
 <ul>
 <li><p>Part 1 implements a power analysis based on a simple linear
 model, covering exploratory data analysis, model fitting and assumption
-checking, pairwise contrast testing via the emmeans package, parametric
-data simulation, and parallelized replicated simulation.</p></li>
+checking, pairwise contrast testing via the <code>emmeans</code>
+package, parametric data simulation, and parallelized replicated
+simulation.</p></li>
 <li><p>Part 2 implements a robustness check by repeating the power
 analysis under a generalized least squares model with group-specific
 residual variances, fitted using the nlme package. The two approaches
@@ -1883,7 +1884,8 @@ r_v_f + r_v_g + r_v_supp + r_v_dose + plot_layout(design = r_design) + plot_anno
 <hr>
 </div>
 <div id="pairwise-contrast-significance-testing-via-emmeans" class="section level2">
-<h2>1.4 Pairwise contrast significance testing via emmeans</h2>
+<h2>1.4 Pairwise contrast significance testing via
+<code>emmeans</code></h2>
 <p>When we looked at the model summary earlier, we did not discuss which
 model components we might want to conduct a power analysis on. The beta
 coefficients are one option, but here we discuss another option. Let’s
@@ -1895,9 +1897,9 @@ OJ-2, between OJ-0.5 and VC-0.5, OJ-0.5 and VC-2, and so on. There are
 15 possible pairwise differences, or contrasts, that we could test.
 Let’s assume we are interested in all of them, and that together, the 15
 pairwise contrasts constitute a family of tests.</p>
-<p>One avenue forward is to use the emmeans package, which allows for
-the calculation of cell and/or marginal means for subgroups of the
-dataset. Let’s first estimate the cell means for each of the six
+<p>One avenue forward is to use the <code>emmeans</code> package, which
+allows for the calculation of cell and/or marginal means for subgroups
+of the dataset. Let’s first estimate the cell means for each of the six
 treatment groups using the <code>emmeans()</code> function and the full
 set of predictors. Note that these are cell means because we are
 estimating the means at combinations of supplement and dose. Although it
@@ -2191,24 +2193,23 @@ linear model in a manner that enforces model assumptions. This latter
 point deserves some explanation. The pilot linear model assumed constant
 error variance (homoscedasticity), and this assumption is recapitulated
 in the simulation of random error, which is drawn from the same normal
-distribution regardless of a simulated observation’s predictor values or
-expected values. <strong>By constructing simulated data in this manner,
-we assume that the parameters estimated using our pilot data and model
-are their true values.</strong> Consequently, poor parameterization of
-the pilot linear model can compromise the utility of the downstream
-power analysis.</p>
+distribution for all observations. <strong>By constructing simulated
+data in this manner, we assume that the parameters estimated using our
+pilot data and model are their true values.</strong> Consequently, poor
+parameterization of the pilot linear model can compromise the utility of
+the downstream power analysis.</p>
 <p>Next, we subject the simulated data to a statistical modeling process
 identical to the one we used for the observed pilot data. Here, we use
 <code>lm(len ~ supp * dose, data = sim_data)</code>, which estimates
 beta coefficients and residual variance from the simulated data. We pass
-the resulting model through emmeans-based pairwise contrast testing, and
-we check which P values are statistically significant at a desired
-alpha. Note again that <code>pairs()</code> produces Tukey-adjusted P
-values by default, and this is appropriate for the intended analysis
-that we’ve defined above. Researchers adapting this code to other
-problems should carefully consider whether their intended analysis
-framework matches the assumptions encoded here, particularly regarding
-the choice of multiple testing correction.</p>
+the resulting model through <code>emmeans</code>-based pairwise contrast
+testing, and we check which P values are statistically significant at a
+desired alpha. Note again that <code>pairs()</code> produces
+Tukey-adjusted P values by default, and this is appropriate for the
+intended analysis that we’ve defined above. Researchers adapting this
+code to other problems should carefully consider whether their intended
+analysis framework matches the assumptions encoded here, particularly
+regarding the choice of multiple testing correction.</p>
 <pre class="r"><code># simulate sampling
 sim_sampling = function(supp, dose, grp_n){
   sim_data = expand.grid(supp = supp,
@@ -2371,7 +2372,11 @@ knitr::kable(head(sim1_data, 15))</code></pre>
 </tbody>
 </table>
 <p>The next code chunk generates the simulated response values (i.e.,
-odontoblast lengths).</p>
+odontoblast lengths). The column “expected values” contains the
+deterministic group means, the column “noise” contains the simulated
+random error, and the column “len” contains the simulated response
+values obtained by summing across the latter two columns. Let’s view the
+first 15 lines of the simulated dataset.</p>
 <pre class="r"><code># generate the model matrix (the X matrix matching your formula)
 sim1_X = model.matrix(~ supp * dose, data = sim1_data)
 
@@ -2603,10 +2608,10 @@ simulation replicates where sig == TRUE for a particular contrast; this
 proportion is therefore the proportion of positives detected as
 statistically significant (i.e., the <strong>true positive
 rate</strong>), which is also called <strong>statistical power</strong>.
-Statistical power is also defined as the probability of a true positive
-occurring. Thus, repeating this simulation process many times and
-computing the true positive rate for a given contrast constitutes a
-<strong>power analysis</strong> for that contrast.</p>
+Statistical power is also interpretable as the probability of a true
+positive occurring. Repeating our simulation process many times and
+computing the true positive rate constitutes a <strong>power
+analysis</strong>.</p>
 <pre class="r"><code># demonstrate output of the run_emmeans_sim function
 knitr::kable(head(
     run_emmeans_sim(sim_data = sim1_data,
@@ -2716,12 +2721,12 @@ decision-making (e.g., &gt;= 1000 replicates). Another parameter, grp_n,
 controls the per-group sample sizes being simulated. Here, we vary this
 parameter in the range [10, 100] at an increment of five samples, which
 equates to a total dataset size in the range [60, 600] samples given
-that there are six treatment groups. 100 samples per group is quite
-large in a biomedical context, but we include it here to characterize
-power over a large range of dataset sizes. Viewing the first 20 lines of
-the raw results, we can see all 15 contrasts for the first simulation
-for a group size of 10 samples (i.e., column sim_id == 1). We can also
-see a portion of the second simulation with the same dataset parameters
+that there are six treatment groups. 100 samples per group is rather
+large for an animal study, but we include it here to characterize power
+over a large range of dataset sizes. Viewing the first 20 lines of the
+raw results, we can see all 15 contrasts for the first simulation for a
+group size of 10 samples (i.e., column sim_id == 1). We can also see a
+portion of the second simulation with the same dataset parameters
 (sim_id == 2). Our raw output thus captures every contrast for every
 simulation replicate. To estimate power per contrast per group size, we
 must quantify the proportion of replicates where a given combination of
@@ -2768,7 +2773,7 @@ t_end_lm = proc.time() # record end time
 parallel::stopCluster(cl)  # explicitly shut down the cluster
 
 cat(&quot;lm simulation time elapsed:&quot;, (t_end_lm - t_start_lm)[3], &quot;seconds.\n&quot;) # report simulation time</code></pre>
-<pre><code>## lm simulation time elapsed: 182.96 seconds.</code></pre>
+<pre><code>## lm simulation time elapsed: 201.5 seconds.</code></pre>
 <pre class="r"><code>knitr::kable(head(parallel_results, 20)) # view the raw results</code></pre>
 <table>
 <thead>
@@ -3369,11 +3374,12 @@ knitr::kable(data.frame(base_sigma = pilot_sigma_gls_base), caption = &quot;Base
 <hr>
 </div>
 <div id="pairwise-contrast-significance-testing-via-emmeans-1" class="section level2">
-<h2>2.2 Pairwise contrast significance testing via emmeans</h2>
-<p>In Part 1, we used functions from the emmeans package to test
-pairwise contrasts based on the pilot simple linear model. We can apply
-the same functions to the pilot GLS model. We do so below, and all 15
-pairwise contrasts will be carried forward into the power analysis as
+<h2>2.2 Pairwise contrast significance testing via
+<code>emmeans</code></h2>
+<p>In Part 1, we used functions from the <code>emmeans</code> package to
+test pairwise contrasts based on the pilot simple linear model. We can
+apply the same functions to the pilot GLS model. We do so below, and all
+15 pairwise contrasts will be carried forward into the power analysis as
 before.</p>
 <pre class="r"><code># estimated group means (here, cell means)
 pilot_gls_emmeans = emmeans::emmeans(pilot_gls, ~ supp * dose, data = df)
@@ -3620,14 +3626,14 @@ to draw random error from a different normal distribution for each
 group.</p>
 <p>We then subject the simulated data to a <code>gls()</code>-based
 statistical modeling process identical to the one we used for the
-observed pilot data. We pass the resulting model through emmeans-based
-pairwise contrast testing, and we check which P values are statistically
-significant at a desired alpha. Note again that <code>pairs()</code>
-produces Tukey-adjusted P values by default, and this is appropriate for
-the intended analysis that we’ve defined above (i.e., performing all
-pairwise contrasts as a family of tests). Note that run-time may be
-substantially longer due to the additional computation associated with
-the flexible variance structure.</p>
+observed pilot data. We pass the resulting model through
+<code>emmeans</code>-based pairwise contrast testing, and we check which
+P values are statistically significant at a desired alpha. Note again
+that <code>pairs()</code> produces Tukey-adjusted P values by default,
+and this is appropriate for the intended analysis that we’ve defined
+above (i.e., performing all pairwise contrasts as a family of tests).
+Note that run-time may be substantially longer due to the additional
+computation associated with the flexible variance structure.</p>
 <pre class="r"><code># simulate data and conduct significance testing
 run_emmeans_sim_gls = function(sim_data, betas, sigma_lookup, focal_contrasts, alpha = 0.05) {
   
@@ -3790,7 +3796,7 @@ gls_power_df = gls_parallel_results %&gt;%
             power_ci95_high = binom.test(x=sum(as.numeric(sig)==1, na.rm = TRUE), n=sum(!is.na(sig)))$conf.int[2])
 
 cat(&quot;GLS simulation time elapsed:&quot;, (t_end_gls - t_start_gls)[3], &quot;seconds.\n&quot;) # report simulation time</code></pre>
-<pre><code>## GLS simulation time elapsed: 302.11 seconds.</code></pre>
+<pre><code>## GLS simulation time elapsed: 301.43 seconds.</code></pre>
 <pre class="r"><code># report convergence failure rate per group size
 gls_parallel_results %&gt;%
   group_by(grp_n) %&gt;%
@@ -4224,7 +4230,9 @@ where the <code>gls()</code>-based approach suggested a substantially
 higher per-group sample size is necessary to achieve adequate
 statistical power than suggested by the <code>lm()</code>-based
 approach, and we discussed how this discrepancy could affect a follow-up
-experiment.</p>
+experiment. This walkthrough is intended as a starting point for
+researchers who want to perform power analyses for other problems when
+pilot data are available.</p>
 </div>
 
 
